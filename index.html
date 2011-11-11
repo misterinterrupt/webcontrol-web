@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "*"> 
+<html>
+<head>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js" type="text/javascript"></script>
+	<script src="lib/raphael.js" type="text/javascript"></script>
+	<script type="text/javascript">
+	$(function () {
+		var width = 320,
+			height = 200,
+			paper = Raphael('control', width, height),
+			blotter = paper.rect(0, 0, width, height),
+			points = paper.set(),
+			point_radius = 5,
+			point_diameter = point_radius*2;
+		
+		function centerCoords(x,y) {
+			x -= point_diameter;
+			y -= point_diameter;
+			return {x:x,y:y};
+		}
+
+		function checkBounds(x, y) {
+			var coords = centerCoords(x,y),
+				x = coords.x,
+				y = coords.y,
+				hbounds = (0 >= x && x <= width) ? true : false,
+				vbounds = (0 >= y && y <= height) ? true : false,
+				bounds = {h: hbounds, v: vbounds};
+			return bounds;
+		}
+
+		function dblclick(ev) {
+			var x = ev.pageX - this.attr('y');
+			var y = ev.pageY - this.attr('x');
+			addFocus(x, y);
+		}
+		
+		function drag(dx, dy, x, y) {
+			var coords = centerCoords(x,y),
+				x = coords.x,
+				y = coords.y,
+				bounds = checkBounds(x, y);
+			x = bounds.h ? width : x;
+			this.animate({'cx': x, 'cy': y}, 0);
+		}
+		
+		function addFocus( x, y ) {
+			var coords = centerCoords(x,y),
+				x = coords.x,
+				y = coords.y,
+				point = paper.circle(x, y, point_radius)
+				.attr('fill', '#999999')
+				.attr('stroke', '#000');
+			point.drag(drag);
+			points.push(point);
+		}
+		
+
+		// create the context and a blotter for the points
+		blotter.attr('fill', '#ffffff');
+		blotter.attr('stroke', '#000000');
+		blotter.dblclick(dblclick);
+		
+	});
+	</script>
+</head>
+<body>
+	<div id='control'></div>
+</body>
+</html>
