@@ -73,8 +73,6 @@
 		function dblclick(ev) {
 			var v = relativeVector(ev.pageX, ev.pageY, $blotternode);
 			addFocusPoint(v);
-			console.log(v);
-			// add to gradient colors & recalculate
 		}
 		
 		function drag(dx, dy, x, y) {
@@ -92,15 +90,21 @@
 			} else {
 				this.animate({'cy': validbounds.ymax}, 25);	
 			}
+			this.toFront();
 		}
 		
 		function addFocusPoint(v) {
 			var v = centerCoords(v.x, v.y),
-				focusPoint = paper.circle(v.x, v.y, focusPoint_radius)
-				.attr('fill', '#999999')
-				.attr('stroke', '#000');
+				focusPoint = paper.circle(v.x, v.y, focusPoint_radius * 5)
+				.attr('cursor', 'move')
+				.attr('stroke-opacity', 0)
+				.attr('fill-opacity', 30)
+				.attr('fill','r(0.65, 0.45)orange-red:30-yellow')
+				.toFront();
 			focusPoint.drag(drag);
 			focusPoints.push(focusPoint);
+			// add to gradient colors & recalculate
+
 		}
 
 		function relativeVector(x, y, $node) {
@@ -116,6 +120,9 @@
 	});
 	</script>
 	<style>
+	body {
+		cursor: pointer;
+	}
 	#control{
 		display: block;
 		margin: 5em auto;
