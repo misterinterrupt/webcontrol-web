@@ -4,58 +4,74 @@
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js" type="text/javascript"></script>
 	<script src="lib/raphael.js" type="text/javascript"></script>
 	<script type="text/javascript">
+
+	var Vector2D = function (x, y) {
+		this.x = x;
+		this.y = y;
+	};
+
 	$(function () {
 		var width = 320,
 			height = 200,
 			paper = Raphael('control', width, height),
 			blotter = paper.rect(0, 0, width, height),
-			points = paper.set(),
-			point_radius = 5,
-			point_diameter = point_radius*2;
+			focusPoints = paper.set(),
+			focusPoint_radius = 5,
+			focusPoint_diameter = focusPoint_radius*2;
 		
-		function centerCoords(x,y) {
-			x -= point_diameter;
-			y -= point_diameter;
-			return {x:x,y:y};
+		function centerCoords(x, y) {
+			x -= focusPoint_radius;
+			y -= focusPoint_radius;
+			return new Vector2D(x,y);
 		}
 
-		function checkBounds(x, y) {
-			var coords = centerCoords(x,y),
-				x = coords.x,
-				y = coords.y,
-				hbounds = (0 >= x && x <= width) ? true : false,
-				vbounds = (0 >= y && y <= height) ? true : false,
-				bounds = {h: hbounds, v: vbounds};
-			return bounds;
+		function checkBounds(v, rect) {
+			var top		= v.y < (rect.attr('y')),
+				right	= v.x > (rect.attr('x') + rect.attr('width')),
+				bottom	= v.y > (rect.attr('y') + rect.attr('height')),
+				left	= v.x < (rect.attr('x')),
+				validbounds	= {top: !top, right: !right, bottom: !bottom, left: !left};
+			console.log(rect.attr('y') + rect.attr('height'));
+			return validbounds;
 		}
 
 		function dblclick(ev) {
-			var x = ev.pageX - this.attr('y');
-			var y = ev.pageY - this.attr('x');
-			addFocus(x, y);
+			var v = relativeVector(ev.pageX, ev.pageY, blotter.node);
+			addFocusPoint(v);
+			console.log(v);
+			// add to gradient colors & recalculate
 		}
 		
 		function drag(dx, dy, x, y) {
-			var coords = centerCoords(x,y),
-				x = coords.x,
-				y = coords.y,
-				bounds = checkBounds(x, y);
-			x = bounds.h ? width : x;
-			this.animate({'cx': x, 'cy': y}, 0);
+			var v = relativeVector(x, y, blotter.node),
+				v = centerCoords(v.x, v.y),
+				validbounds = checkBounds(v, blotter);
+			if(validbounds.left && validbounds.right) {
+				this.animate({'cx': v.x}, 100);
+			} else {
+				this.animate({'cx': this.attr('cx')}, 100);
+			}
+			if(validbounds.top && validbounds.bottom) {
+				this.animate({'cy': v.y}, 100);
+			} else {
+				this.animate({'cy': this.attr('cy')}, 100);	
+			}
 		}
 		
-		function addFocus( x, y ) {
-			var coords = centerCoords(x,y),
-				x = coords.x,
-				y = coords.y,
-				point = paper.circle(x, y, point_radius)
+		function addFocusPoint(v) {
+			var v = centerCoords(v.x, v.y),
+				focusPoint = paper.circle(v.x, v.y, focusPoint_radius)
 				.attr('fill', '#999999')
 				.attr('stroke', '#000');
-			point.drag(drag);
-			points.push(point);
+			focusPoint.drag(drag);
+			focusPoints.push(focusPoint);
 		}
-		
 
+		function relativeVector(x, y, node) {
+			x = x - $(document).scrollLeft() - $(node).offset().left;
+			y = y - $(document).scrollTop() - $(node).offset().top;
+			return new Vector2D(x, y);
+		}
 		// create the context and a blotter for the points
 		blotter.attr('fill', '#ffffff');
 		blotter.attr('stroke', '#000000');
@@ -63,6 +79,11 @@
 		
 	});
 	</script>
+	<style>
+	#control{
+		margin: 0 auto;
+	}
+	</style>
 </head>
 <body>
 	<div id='control'></div>
