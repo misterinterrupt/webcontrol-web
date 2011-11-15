@@ -11,10 +11,12 @@
 	};
 
 	$(function () {
-		var width = 320,
+		var $document = $(document);
+			width = 320,
 			height = 200,
 			paper = Raphael('control', width, height),
 			blotter = paper.rect(0, 0, width, height),
+			$blotternode = $(blotter.node),
 			focusPoints = paper.set(),
 			focusPoint_radius = 5,
 			focusPoint_diameter = focusPoint_radius*2;
@@ -25,36 +27,70 @@
 			return new Vector2D(x,y);
 		}
 
+		/**
+		 * calculates boundary values for a given vector
+		 * xmax and ymax vals are null if vector is within boundaries  
+		 * @param  {Vector2D} v 
+		 * @param  {Raphael Element} rect
+		 * @return {top, right, bottom, left, xmax, ymax}
+		 */
 		function checkBounds(v, rect) {
-			var top		= v.y < (rect.attr('y')),
-				right	= v.x > (rect.attr('x') + rect.attr('width')),
-				bottom	= v.y > (rect.attr('y') + rect.attr('height')),
-				left	= v.x < (rect.attr('x')),
-				validbounds	= {top: !top, right: !right, bottom: !bottom, left: !left};
-			console.log(rect.attr('y') + rect.attr('height'));
+			// define the boundaries
+			var top		= (rect.attr('y')),
+				right	= (rect.attr('x') + rect.attr('width')),
+				bottom	= (rect.attr('y') + rect.attr('height')),
+				left	= (rect.attr('x')),
+			// check if out of bounds
+				outtop		= v.y < top,
+				outright	= v.x > right,
+				outbottom	= v.y > bottom,
+				outleft		= v.x < left,
+			// returns true if valid (within bounds)
+				validbounds	= {
+					top 	: !outtop, 
+					right	: !outright,
+					bottom	: !outbottom,
+					left 	: !outleft,
+					xmax	: null,
+					ymax	: null
+				};
+			// return max position values for out of bounds axis
+			if(!validbounds.right) {
+				validbounds.xmax = right;
+			} else
+			if(!validbounds.left) {
+				validbounds.xmax = left;
+			}
+			if(!validbounds.top) {
+				validbounds.ymax = top;
+			} else
+			if(!validbounds.bottom) {
+				validbounds.ymax = bottom;
+			}
 			return validbounds;
 		}
 
 		function dblclick(ev) {
-			var v = relativeVector(ev.pageX, ev.pageY, blotter.node);
+			var v = relativeVector(ev.pageX, ev.pageY, $blotternode);
 			addFocusPoint(v);
 			console.log(v);
 			// add to gradient colors & recalculate
 		}
 		
 		function drag(dx, dy, x, y) {
-			var v = relativeVector(x, y, blotter.node),
+			var v = relativeVector(x, y, $blotternode),
 				v = centerCoords(v.x, v.y),
 				validbounds = checkBounds(v, blotter);
+
 			if(validbounds.left && validbounds.right) {
 				this.animate({'cx': v.x}, 100);
 			} else {
-				this.animate({'cx': this.attr('cx')}, 100);
+				this.animate({'cx': validbounds.xmax}, 100);
 			}
 			if(validbounds.top && validbounds.bottom) {
 				this.animate({'cy': v.y}, 100);
 			} else {
-				this.animate({'cy': this.attr('cy')}, 100);	
+				this.animate({'cy': validbounds.ymax}, 100);	
 			}
 		}
 		
@@ -67,9 +103,9 @@
 			focusPoints.push(focusPoint);
 		}
 
-		function relativeVector(x, y, node) {
-			x = x - $(document).scrollLeft() - $(node).offset().left;
-			y = y - $(document).scrollTop() - $(node).offset().top;
+		function relativeVector(x, y, $node) {
+			x = x - $document.scrollLeft() - $node.offset().left;
+			y = y - $document.scrollTop() - $node.offset().top;
 			return new Vector2D(x, y);
 		}
 		// create the context and a blotter for the points
