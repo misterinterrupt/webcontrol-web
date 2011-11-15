@@ -95,10 +95,11 @@
 		
 		function addFocusPoint(v) {
 			var v = centerCoords(v.x, v.y),
-				focusPoint = paper.circle(v.x, v.y, focusPoint_radius * 5)
+				focusPoint = paper.circle(v.x, v.y, focusPoint_radius * 15)
 				.attr('cursor', 'move')
 				.attr('stroke-opacity', 0)
-				.attr('fill-opacity', 30)
+				.attr('opacity', 0.2)
+				.attr('fill-opacity', 0.5)
 				.attr('fill','r(0.65, 0.45)orange-red:30-yellow')
 				.toFront();
 			focusPoint.drag(drag);
