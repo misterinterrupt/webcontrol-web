@@ -83,14 +83,14 @@
 				validbounds = checkBounds(v, blotter);
 
 			if(validbounds.left && validbounds.right) {
-				this.animate({'cx': v.x}, 100);
+				this.animate({'cx': v.x}, 25);
 			} else {
-				this.animate({'cx': validbounds.xmax}, 100);
+				this.animate({'cx': validbounds.xmax}, 25);
 			}
 			if(validbounds.top && validbounds.bottom) {
-				this.animate({'cy': v.y}, 100);
+				this.animate({'cy': v.y}, 25);
 			} else {
-				this.animate({'cy': validbounds.ymax}, 100);	
+				this.animate({'cy': validbounds.ymax}, 25);	
 			}
 		}
 		
@@ -117,7 +117,8 @@
 	</script>
 	<style>
 	#control{
-		margin: 0 auto;
+		display: block;
+		margin: 5em auto;
 	}
 	</style>
 </head>
